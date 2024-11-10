@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Socket.io</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body>
+    <main class="h-screen w-full bg-gray-900 p-5">
+      <h2 class="text-4xl text-white text-center font-semibold">
+        Socket.io Project
+      </h2>
+      <div class="w-full h-[1px] bg-gray-600 my-5"></div>
+    </main>
+
+    <script src="../socket.io/socket.io.js"></script>
+    <script>
+      let socket = io();
+      console.log(socket);
+    </script>
+  </body>
+</html>
