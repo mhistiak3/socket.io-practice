@@ -6,6 +6,15 @@ const expressServer = http.createServer(app);
 
 // configure socket.io
 const io = new Server(expressServer)
+io.on('connection',(socket)=>{
+    console.log('a user connected:',socket.id)
+    setTimeout(()=>{
+       socket.send('Welcome To Socket.io > Server to Client ') 
+    },1000)
+    socket.on('disconnect',()=>{
+        console.log("a user disconnected:", socket.id);
+    })
+})
 
 // client
 app.get("/", (req, res) => {
