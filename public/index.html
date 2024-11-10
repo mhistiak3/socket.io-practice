@@ -7,30 +7,72 @@
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
   <body>
-    <main class="h-screen w-full bg-gray-900 p-5 relative">
-      <h2 class="text-4xl text-white text-center font-semibold">
+    <main class="h-screen w-full bg-gray-900 p-4 relative overflow-y-scroll">
+      <h2 class="text-3xl text-white text-center font-bold mb-4">
         Socket.io Project
       </h2>
-      <div class="w-full h-[1px] bg-gray-600 my-5"></div>
+      <div class="w-full h-px bg-gray-600 my-4"></div>
 
-      <div>
-        <h3
-          class="text-3xl text-white text-center font-semibold"
-          id="time"
-        ></h3>
+      <div class="flex flex-col items-center">
+        <h2 class="text-2xl text-white font-semibold mb-4">Group Chat</h2>
+
+        <div
+          class="w-full max-w-lg bg-gray-800 rounded-lg p-4 shadow-lg flex flex-col"
+        >
+          <!-- Chat messages section -->
+          <div
+            class="h-[450px] overflow-y-auto mb-4 p-1 flex flex-col gap-4"
+            id="messages"
+          >
+            <!-- <div class="flex flex-col space-y-1 bg-gray-700 rounded-lg p-3">
+              <b class="text-yellow-400">Istiak</b>
+              <p class="text-gray-300">Hello</p>
+            </div> -->
+          </div>
+
+          <!-- Input section -->
+          <div class="flex items-center gap-4">
+            <input
+              type="text"
+              placeholder="Type your message..."
+              class="flex-1 px-4 py-2 text-white bg-gray-900 rounded-lg outline-none"
+              id="message"
+            />
+            <button
+              class="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-blue-500 transition-colors"
+              onclick="senMessage()"
+            >
+              Send
+            </button>
+          </div>
+        </div>
       </div>
     </main>
 
     <script src="../socket.io/socket.io.js"></script>
     <script>
-      let time = document.getElementById("time");
       let socket = io();
+      //   let time = document.getElementById("time");
       //   socket.on("message", (data) => {
       //     time.textContent = data;
       //   });
 
-      socket.on("welcome", (data) => {
-        time.textContent = data;
+      //   socket.on("welcome", (data) => {
+      //     time.textContent = data;
+      //   });
+
+      let message = document.getElementById("message");
+      let messagesDisplay = document.getElementById("messages");
+      let name = prompt("Enter your name");
+      function senMessage() {
+        socket.emit("send_message", { message: message.value, name });
+        message.value = "";
+      }
+      socket.on("recive_message", (data) => {
+        messagesDisplay.innerHTML += `<div class="flex flex-col space-y-1 bg-gray-700 rounded-lg p-3">
+        <b class="text-yellow-400">${data.name || "Unknown"}</b>
+        <p class="text-gray-300">${data.message}</p>        
+      </div>`;
       });
     </script>
   </body>

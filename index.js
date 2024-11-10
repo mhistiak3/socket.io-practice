@@ -7,17 +7,27 @@ const expressServer = http.createServer(app);
 // configure socket.io
 const io = new Server(expressServer);
 io.on("connection", (socket) => {
+  console.log("a user connected:", socket.id);
+
   //   setInterval(() => {
-    //   let date = new Date();
-    //   let time = date.toLocaleTimeString();
+  //   let date = new Date();
+  //   let time = date.toLocaleTimeString();
   //     socket.send(time);
   //   });
-    setInterval(() => {
-      let date = new Date();
-      let time = date.toLocaleTimeString();
-        socket.emit("welcome", time);
-    },100);
+  // setInterval(() => {
+  //   let date = new Date();
+  //   let time = date.toLocaleTimeString();
+  //     socket.emit("welcome", time);
+  // },1000);
 
+  //   socket.on("send_message", (data) => {
+  //     socket.emit("recive_message", data);
+  //   });
+
+  // boardcasting
+  socket.on("send_message", (data) => {
+    io.sockets.emit("recive_message", data);
+  });
 
   socket.on("disconnect", () => {
     console.log("a user disconnected:", socket.id);
