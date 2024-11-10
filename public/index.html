@@ -12,22 +12,25 @@
         Socket.io Project
       </h2>
       <div class="w-full h-[1px] bg-gray-600 my-5"></div>
-      <div
-        id="alert"
-        class="absolute top-5 right-5 bg-gray-600 text-white p-3 rounded hidden text-sm"
-      ></div>
+
+      <div>
+        <h3
+          class="text-3xl text-white text-center font-semibold"
+          id="time"
+        ></h3>
+      </div>
     </main>
 
     <script src="../socket.io/socket.io.js"></script>
     <script>
-      let alert = document.getElementById("alert");
+      let time = document.getElementById("time");
       let socket = io();
-      socket.on("message", (data) => {
-        alert.classList.remove("hidden");
-        alert.textContent = data;
-        setTimeout(() => {
-          alert.classList.add("hidden");
-        }, 3000);
+      //   socket.on("message", (data) => {
+      //     time.textContent = data;
+      //   });
+
+      socket.on("welcome", (data) => {
+        time.textContent = data;
       });
     </script>
   </body>
