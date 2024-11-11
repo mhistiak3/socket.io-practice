@@ -3,23 +3,50 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Socket.io</title>
+    <title>Group Chat</title>
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
   <body>
-    <main class="h-screen w-full bg-gray-900 p-4 relative overflow-y-scroll">
-      <h2 class="text-3xl text-white text-center font-bold mb-4">
-        Socket.io Project
-      </h2>
+    <main class="h-screen w-full bg-gray-900 p-4 relative">
+      <!-- Alert section -->
       <p
         id="alert"
         class="absolute top-5 right-5 p-2 hidden bg-gray-800 text-white"
       ></p>
-      <div class="w-full h-px bg-gray-600 my-4"></div>
 
-      <div class="flex flex-col items-center">
+      <!-- Login Section -->
+      <div
+        id="loginSection"
+        class="flex flex-col items-center justify-center h-full"
+      >
+        <h2 class="text-2xl text-white font-semibold mb-4">Enter Chat Room</h2>
+        <div
+          class="w-full max-w-md bg-gray-800 rounded-lg p-6 shadow-lg flex flex-col gap-4"
+        >
+          <input
+            type="text"
+            placeholder="Enter your name"
+            class="w-full px-4 py-2 text-white bg-gray-900 rounded-lg outline-none"
+            id="username"
+          />
+          <input
+            type="text"
+            placeholder="Enter room ID"
+            class="w-full px-4 py-2 text-white bg-gray-900 rounded-lg outline-none"
+            id="roomid"
+          />
+          <button
+            class="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-blue-500 transition-colors"
+            onclick="joinChat()"
+          >
+            Join Chat
+          </button>
+        </div>
+      </div>
+
+      <!-- Chat Section -->
+      <div id="chatSection" class="hidden flex flex-col items-center">
         <h2 class="text-2xl text-white font-semibold mb-4">Group Chat</h2>
-
         <div
           class="w-full max-w-lg bg-gray-800 rounded-lg p-4 shadow-lg flex flex-col"
         >
@@ -28,12 +55,8 @@
             class="h-[450px] overflow-y-auto mb-4 p-1 flex flex-col gap-4"
             id="messages"
           >
-            <!-- <div class="flex flex-col space-y-1 bg-gray-700 rounded-lg p-3">
-              <b class="text-yellow-400">Istiak</b>
-              <p class="text-gray-300">Hello</p>
-            </div> -->
+            <!-- Messages will go here -->
           </div>
-
           <!-- Input section -->
           <div class="flex items-center gap-4">
             <input
@@ -44,7 +67,7 @@
             />
             <button
               class="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-blue-500 transition-colors"
-              onclick="senMessage()"
+              onclick="sendMessage()"
             >
               Send
             </button>
@@ -55,40 +78,73 @@
 
     <script src="../socket.io/socket.io.js"></script>
     <script>
-      let roomName = prompt("Enter room name");
-      let socket = io(roomName);
-      //   let time = document.getElementById("time");
-      //   socket.on("message", (data) => {
-      //     time.textContent = data;
-      //   });
+      const socket = io();
+      const alert = document.getElementById("alert");
+      let roomid = 0;
+      let username = "";
+      function joinChat() {
+        const UserName = document.getElementById("username").value;
+        const RoomId = document.getElementById("roomid").value;
+        roomid = RoomId;
+        username = UserName
 
-      //   socket.on("welcome", (data) => {
-      //     time.textContent = data;
-      //   });
+        if (username && roomid) {
+          // Hide login and show chat section
+          document.getElementById("loginSection").classList.add("hidden");
+          document.getElementById("chatSection").classList.remove("hidden");
 
-      let alert = document.getElementById("alert");
-      let message = document.getElementById("message");
-      let messagesDisplay = document.getElementById("messages");
-      let name = prompt("Enter your name");
-      socket.emit("join_user", name);
-      socket.on("welcome", (name) => {
-        console.log(name);
+          socket.emit("joinRoom", { username, roomid });
+        } else {
+          alert("Please enter both name and room ID.");
+        }
+      }
 
+      // joined message
+      socket.on("joined_message", (data) => {
         alert.classList.remove("hidden");
-        alert.innerHTML = `<b>${name}</b> joined the group chat`;
+        alert.textContent = data;
         setTimeout(() => {
           alert.classList.add("hidden");
         }, 3000);
       });
-      function senMessage() {
-        socket.emit("send_message", { message: message.value, name });
-        message.value = "";
+
+      function sendMessage() {
+        const message = document.getElementById("message").value;
+        if (message) {
+          // Emit message event to server
+          socket.emit("chatMessage", { roomid, message,username });
+
+          // Clear input field
+          document.getElementById("message").value = "";
+        }
       }
-      socket.on("recive_message", (data) => {
-        messagesDisplay.innerHTML += `<div class="flex flex-col space-y-1 bg-gray-700 rounded-lg p-3">
-        <b class="text-yellow-400">${data.name || "Unknown"}</b>
-        <p class="text-gray-300">${data.message}</p>        
-      </div>`;
+
+      // Listen for messages from server
+      socket.on("send_message", (data) => {
+        const messageDiv = document.createElement("div");
+        messageDiv.classList.add(
+          "flex",
+          "flex-col",
+          "space-y-1",
+          "bg-gray-700",
+          "rounded-lg",
+          "p-3"
+        );
+
+        const sender = document.createElement("b");
+        sender.classList.add("text-yellow-400");
+        sender.textContent = data.username;
+
+        const msg = document.createElement("p");
+        msg.classList.add("text-gray-300");
+        msg.textContent = data.message;
+
+        messageDiv.appendChild(sender);
+        messageDiv.appendChild(msg);
+
+        document.getElementById("messages").appendChild(messageDiv);
+        document.getElementById("messages").scrollTop =
+          document.getElementById("messages").scrollHeight;
       });
     </script>
   </body>

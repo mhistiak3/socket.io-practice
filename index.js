@@ -6,35 +6,37 @@ const expressServer = http.createServer(app);
 
 // configure socket.io
 const io = new Server(expressServer);
+let mappedRooms = [];
+io.on("connection", (socket) => {
+  console.log("a user connected");
+  socket.on("joinRoom", (data) => {
+    socket.join(data.roomid);
 
-let rooomName = io.of("/room1");
-rooomName.on("connection", (socket) => {
-  console.log("a user connected:", socket.id);
-  socket.on("join_user", (name) => {
-    rooomName.emit("welcome", name);
+    const existingRoom = mappedRooms.find(
+      (room) => room.roomid === data.roomid
+    );
+    if (existingRoom) {
+      existingRoom.users.push({ username: data.username, socketId: socket.id });
+      io.to(data.roomid).emit("joined_message", data.username + " joined");
+    } else {
+      mappedRooms.push({
+        roomid: data.roomid,
+        users: [{ username: data.username, socketId: socket.id }],
+      });
+    }
   });
-  //   setInterval(() => {
-  //   let date = new Date();
-  //   let time = date.toLocaleTimeString();
-  //     socket.send(time);
-  //   });
-  // setInterval(() => {
-  //   let date = new Date();
-  //   let time = date.toLocaleTimeString();
-  //     socket.emit("welcome", time);
-  // },1000);
-
-  //   socket.on("send_message", (data) => {
-  //     socket.emit("recive_message", data);
-  //   });
-
-  // boardcasting
-  socket.on("send_message", (data) => {
-    rooomName.emit("recive_message", data);
+  socket.on("chatMessage", (data) => {
+    const room = mappedRooms.find((room) => room.roomid === data.roomid);
+    if (room) {
+      io.to(room.roomid).emit("send_message", {
+        username: data.username,
+        message: data.message,
+      })
+     
+    } 
   });
-
   socket.on("disconnect", () => {
-    console.log("a user disconnected:", socket.id);
+    console.log("user disconnected");
   });
 });
 
