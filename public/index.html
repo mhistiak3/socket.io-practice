@@ -46,7 +46,7 @@
 
       <!-- Chat Section -->
       <div id="chatSection" class="hidden flex flex-col items-center">
-        <h2 class="text-2xl text-white font-semibold mb-4">Group Chat</h2>
+        <h2 class="text-2xl text-white font-semibold mb-4">Group Chat <span id="roomSize"></span></h2>
         <div
           class="w-full max-w-lg bg-gray-800 rounded-lg p-4 shadow-lg flex flex-col"
         >
@@ -80,13 +80,14 @@
     <script>
       const socket = io();
       const alert = document.getElementById("alert");
+      const roomSize = document.getElementById("roomSize");
       let roomid = 0;
       let username = "";
       function joinChat() {
         const UserName = document.getElementById("username").value;
         const RoomId = document.getElementById("roomid").value;
         roomid = RoomId;
-        username = UserName
+        username = UserName;
 
         if (username && roomid) {
           // Hide login and show chat section
@@ -101,8 +102,9 @@
 
       // joined message
       socket.on("joined_message", (data) => {
+        roomSize.textContent = `(${data.roomSize})`;
         alert.classList.remove("hidden");
-        alert.textContent = data;
+        alert.textContent = data.message;
         setTimeout(() => {
           alert.classList.add("hidden");
         }, 3000);
@@ -112,7 +114,7 @@
         const message = document.getElementById("message").value;
         if (message) {
           // Emit message event to server
-          socket.emit("chatMessage", { roomid, message,username });
+          socket.emit("chatMessage", { roomid, message, username });
 
           // Clear input field
           document.getElementById("message").value = "";
@@ -145,6 +147,16 @@
         document.getElementById("messages").appendChild(messageDiv);
         document.getElementById("messages").scrollTop =
           document.getElementById("messages").scrollHeight;
+      });
+
+      socket.on("leave_room", (data) => {
+        console.log(data);
+        
+        alert.classList.remove("hidden");
+        alert.textContent = data;
+        setTimeout(() => {
+          alert.classList.add("hidden");
+        }, 3000);
       });
     </script>
   </body>
