@@ -11,6 +11,10 @@
       <h2 class="text-3xl text-white text-center font-bold mb-4">
         Socket.io Project
       </h2>
+      <p
+        id="alert"
+        class="absolute top-5 right-5 p-2 hidden bg-gray-800 text-white"
+      ></p>
       <div class="w-full h-px bg-gray-600 my-4"></div>
 
       <div class="flex flex-col items-center">
@@ -51,7 +55,8 @@
 
     <script src="../socket.io/socket.io.js"></script>
     <script>
-      let socket = io();
+      let roomName = prompt("Enter room name");
+      let socket = io(roomName);
       //   let time = document.getElementById("time");
       //   socket.on("message", (data) => {
       //     time.textContent = data;
@@ -61,9 +66,20 @@
       //     time.textContent = data;
       //   });
 
+      let alert = document.getElementById("alert");
       let message = document.getElementById("message");
       let messagesDisplay = document.getElementById("messages");
       let name = prompt("Enter your name");
+      socket.emit("join_user", name);
+      socket.on("welcome", (name) => {
+        console.log(name);
+
+        alert.classList.remove("hidden");
+        alert.innerHTML = `<b>${name}</b> joined the group chat`;
+        setTimeout(() => {
+          alert.classList.add("hidden");
+        }, 3000);
+      });
       function senMessage() {
         socket.emit("send_message", { message: message.value, name });
         message.value = "";

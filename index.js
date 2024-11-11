@@ -6,9 +6,13 @@ const expressServer = http.createServer(app);
 
 // configure socket.io
 const io = new Server(expressServer);
-io.on("connection", (socket) => {
-  console.log("a user connected:", socket.id);
 
+let rooomName = io.of("/room1");
+rooomName.on("connection", (socket) => {
+  console.log("a user connected:", socket.id);
+  socket.on("join_user", (name) => {
+    rooomName.emit("welcome", name);
+  });
   //   setInterval(() => {
   //   let date = new Date();
   //   let time = date.toLocaleTimeString();
@@ -26,7 +30,7 @@ io.on("connection", (socket) => {
 
   // boardcasting
   socket.on("send_message", (data) => {
-    io.sockets.emit("recive_message", data);
+    rooomName.emit("recive_message", data);
   });
 
   socket.on("disconnect", () => {
